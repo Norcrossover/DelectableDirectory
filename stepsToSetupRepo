@@ -1,0 +1,23 @@
+1. clone the repo
+2. install ngrok and add it to the environments variable
+3. npm install the project
+4. npm install dialogflow
+5. run node index.js
+
+
+
+To test your Dialogflow agent locally, you'll need to run your server locally and expose it to the internet so that Dialogflow can send requests to it. Here's a step-by-step guide:
+
+1. **Run Your Server Locally:** Start your local server. If you're using Node.js and Express, you might start your server with `node index.js`.
+
+2. **Expose Your Local Server with ngrok:** To allow Dialogflow to communicate with your local server, you can use a tool like [ngrok](https://ngrok.com/). This tool creates a secure tunnel from a public endpoint to your localhost. You can start ngrok on the same port as your local server. For example, if your server is running on port 3000, you would start ngrok with `./ngrok http 3000`. ngrok will then provide a public URL that forwards to your local server.
+
+3. **Update Dialogflow Fulfillment URL:** In the Dialogflow console, go to the "Fulfillment" section and replace the URL in the "URL" field under "Webhook" with the public URL provided by ngrok.
+
+4. **Test Your Agent:** You can now test your agent in the Dialogflow simulator. The requests will be sent to your local server, and you can debug your code in real-time.
+
+Remember to keep ngrok running while you're testing. If you stop ngrok and start it again, the public URL will change, and you'll need to update the URL in Dialogflow again.
+
+Also, please note that the free version of ngrok will assign a new public URL every time you start it. If you want a persistent URL, you might consider upgrading to a paid ngrok plan or deploying your code to a development server.
+
+I hope this helps! Let me know if you have any other questions. 🚀
