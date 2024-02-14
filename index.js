@@ -7,7 +7,14 @@ const {WebhookClient} = require('dialogflow-fulfillment');
 const {Card, Suggestion} = require('dialogflow-fulfillment');
  
 process.env.DEBUG = 'dialogflow:debug'; // enables lib debugging statements
- 
+
+const express = require('express');
+const app = express();
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
+  });  
+
 exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, response) => {
   const agent = new WebhookClient({ request, response });
   console.log('Dialogflow Request headers: ' + JSON.stringify(request.headers));
@@ -45,7 +52,7 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
     let foodCarts = [
         {name: 'pizza schmizza', type: 'Pizza', location: 'Portland'},
         {name: 'Thai Sunflowers', type: 'Thai', location: 'Portland'},
-        {name: '#hydhub', type: 'Indian', location: 'Seattle'},
+        {name: 'Hydhub', type: 'Indian', location: 'Seattle'},
         // Add more food carts here...
     ];
 
@@ -138,8 +145,8 @@ function retrieveFoodCartInfo(foodCartName) {
   intentMap.set('Default Welcome Intent', welcome);
   intentMap.set('Default Fallback Intent', fallback);
   // intentMap.set('your intent name here', yourFunctionHandler);
-  intentMap.set('FindFoodCart', findFoodCart);
-intentMap.set('FindFoodCartInfo', findFoodCartInfo);
+  intentMap.set('Find Food Cart', findFoodCart);
+  intentMap.set('Find Food Cart Info', findFoodCartInfo);
   // intentMap.set('your intent name here', googleAssistantHandler);
   agent.handleRequest(intentMap);
 });
