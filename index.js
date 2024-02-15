@@ -49,29 +49,48 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
   
   function matchFoodCart(foodType, location) {
     // Define your food cart data
-    let foodCarts = [
-        {name: 'pizza schmizza', type: 'Pizza', location: 'Portland'},
+    const foodCarts = [
+        {name: 'Pizza Schmizza', type: 'Pizza', location: 'Portland'},
         {name: 'Thai Sunflowers', type: 'Thai', location: 'Portland'},
         {name: 'Hydhub', type: 'Indian', location: 'Seattle'},
-        // Add more food carts here...
+        {name: 'Fuego ALL DAY', type: 'Mexican', location: 'Portland'},
+        {name: 'Chinese Lucky Dragon', type: 'Chinese', location: 'Portland'},
+        {name: 'Wasabi Sushi PDX', type: 'Sushi', location: 'Portland'}
     ];
 
     // Filter the food carts based on the food type and location
-    let matchingCarts = foodCarts.filter(cart => cart.type === foodType && cart.location === location);
+    const matchingCarts = foodCarts.filter(cart => cart.type.toLowerCase() === foodType.toLowerCase() && cart.location.toLowerCase() === location.toLowerCase());
 
     return matchingCarts;
 }
 
 function findFoodCart(agent) {
     // Get the response values
-    let foodType = agent.parameters.TypeOfFood;
-    let location = agent.parameters.Location;
+    let foodType = agent.context.get('foodcontext').parameters.TypeOfFood;
+    let location = agent.context.get('foodcontext').parameters.Location;
+
+    // Check if both parameters are provided
+    if (!foodType && !location) {
+        agent.add('Could you please provide both the type of food and the location?');
+        return;
+    }
+
+    // Reprompt for missing information
+    if (!foodType) {
+        agent.add('Could you please specify the type of food you are looking for?');
+        return;
+    }
+
+    if (!location) {
+        agent.add('Could you please specify the location?');
+        return;
+    }
 
     // Match the food type and location to a cart
     let matchingCarts = matchFoodCart(foodType, location);
 
     // Check if any matching carts were found
-    if (!matchingCarts) {
+    if (!matchingCarts || matchingCarts.length === 0) {
         agent.add(`Sorry, I couldn't find any carts that serve ${foodType} in ${location}.`);
     } else if (matchingCarts.length === 1) {
         agent.add(`Great news! I found a cart that serves ${foodType} in ${location}. It's called ${matchingCarts[0]}.`);
