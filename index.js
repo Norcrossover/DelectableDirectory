@@ -57,9 +57,10 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
         {name: 'Wasabi Sushi PDX', type: 'Sushi', location: 'Portland'}
     ];
 
-    const matchingCarts = foodCarts.filter(cart => cart.type.toLowerCase() === foodType.toLowerCase() && cart.location.toLowerCase() === location.toLowerCase());
-
-    return matchingCarts;
+    return foodCarts.filter(cart => 
+        cart.type.toLowerCase() === foodType.toLowerCase() && 
+        cart.location.toLowerCase() === location.toLowerCase()
+    );
 }
 
 function findFoodCart(agent) {
