@@ -69,19 +69,13 @@ function findFoodCart(agent) {
     let foodType = agent.context.get('foodcontext').parameters.TypeOfFood;
     let location = agent.context.get('foodcontext').parameters.Location;
 
-    // Check if both parameters are provided
-    if (!foodType && !location) {
-        agent.add('Could you please provide both the type of food and the location?');
-        return;
-    }
-
     // Reprompt for missing information
-    if (!foodType) {
+    if (foodType == null || foodType == "") {
         agent.add('Could you please specify the type of food you are looking for?');
         return;
     }
 
-    if (!location) {
+    if (location == null || location == "") {
         agent.add('Could you please specify the location?');
         return;
     }
@@ -93,18 +87,20 @@ function findFoodCart(agent) {
     if (!matchingCarts || matchingCarts.length === 0) {
         agent.add(`Sorry, I couldn't find any carts that serve ${foodType} in ${location}.`);
     } else if (matchingCarts.length === 1) {
-        agent.add(`Great news! I found a cart that serves ${foodType} in ${location}. It's called ${matchingCarts[0]}.`);
+        agent.add(`Great news! I found a cart that serves ${foodType} in ${location}. It's called ${matchingCarts[0].name}.`);
     } else if (matchingCarts.length === 2) {
-        agent.add(`I found 2 carts that serve ${foodType} in ${location}. They are ${matchingCarts[0]} and ${matchingCarts[1]}.`);
+        agent.add(`I found 2 carts that serve ${foodType} in ${location}. They are ${matchingCarts[0].name} and ${matchingCarts[1].name}.`);
     } else {
         let response = `I found several carts that serve ${foodType} in ${location}: `;
         for (let cart of matchingCarts) {
-            response += `${cart}, `;
+            response += `${cart.name}, `;
         }
         // Remove the trailing comma and space
         response = response.slice(0, -2);
         agent.add(response);
     }
+
+    agent.add(`Have successfully made it to the end`);
 }
   
 function findFoodCartInfo(agent) {
@@ -116,14 +112,6 @@ function findFoodCartInfo(agent) {
 
     // Add the retrieved information to the agent's response
     agent.add(foodCartInfo);
-}
-
-function generateFoodCartInfoString(typeOfFood, foodCartName) {
-    const timeOpen = `The cart is open from 9am to 5pm. `;
-    const cartServesTypeOfFood = `The cart serves ${typeOfFood} food. `;
-    const nameOfFoodCart = `The name of this food cart is ${foodCartName}. `;
-
-    return nameOfFoodCart + cartServesTypeOfFood + timeOpen;
 }
 
 const foodCarts = [
@@ -138,7 +126,7 @@ const foodCarts = [
 ];
 
 function retrieveFoodCartInfo(foodCartName) {
-    const foodCart = foodCarts.find(cart => cart.name === foodCartName);
+    const foodCart = foodCarts.find(cart => cart.name.toLowerCase() === foodCartName.toLowerCase());
 
     if (foodCart) {
         return generateFoodCartInfoString(foodCart.type, foodCart.name);
@@ -146,6 +134,16 @@ function retrieveFoodCartInfo(foodCartName) {
         return `Sorry, I couldn't find any information about the ${foodCartName} food cart.`;
     }
 }
+
+
+function generateFoodCartInfoString(typeOfFood, foodCartName) {
+    const timeOpen = `The cart is open from 9am to 5pm. `;
+    const cartServesTypeOfFood = `The cart serves ${typeOfFood} food. `;
+    const nameOfFoodCart = `The name of this food cart is ${foodCartName}. `;
+
+    return nameOfFoodCart + cartServesTypeOfFood + timeOpen;
+}
+
 
 
   // // Uncomment and edit to make your own Google Assistant intent handler
