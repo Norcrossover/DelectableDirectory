@@ -47,16 +47,38 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
   //   agent.setContext({ name: 'weather', lifespan: 2, parameters: { city: 'Rome' }});
   // }
   
-  function matchFoodCart(foodType, location) {
-    const foodCarts = [
-        {name: 'Pizza Schmizza', type: 'Pizza', location: 'Portland'},
-        {name: 'Thai Sunflowers', type: 'Thai', location: 'Portland'},
-        {name: 'Hydhub', type: 'Indian', location: 'Seattle'},
-        {name: 'Fuego ALL DAY', type: 'Mexican', location: 'Portland'},
-        {name: 'Chinese Lucky Dragon', type: 'Chinese', location: 'Portland'},
-        {name: 'Wasabi Sushi PDX', type: 'Sushi', location: 'Portland'}
-    ];
+const foodCarts = [
+    {name: 'Thai Sunflowers', type: 'Thai', location: 'Portland'},
+    {name: 'Hydhub', type: 'Indian', location: 'Portland'},
+    {name: 'Fuego ALL DAY', type: 'Mexican', location: 'Portland'},
+    {name: 'Chinese Lucky Dragon', type: 'Chinese', location: 'Portland'},
+    {name: 'Wasabi Sushi PDX', type: 'Sushi', location: 'Portland'},
+    {name: 'Sakura Noodles', type: 'Japanese', location: 'Portland'},
+    {name: 'K-bop!', type: 'Korean', location: 'Portland'},
 
+    {name: 'Thai Sunflowers', type: 'Thai', location: 'Seattle'},
+    {name: 'Hydhub', type: 'Indian', location: 'Seattle'},
+    {name: 'Fuego ALL DAY', type: 'Mexican', location: 'Seattle'},
+    {name: 'Chinese Lucky Dragon', type: 'Chinese', location: 'Seattle'},
+    {name: 'Wasabi Sushi PDX', type: 'Sushi', location: 'Seattle'},
+    {name: 'Sakura Noodles', type: 'Japanese', location: 'Seattle'},
+    {name: 'K-bop!', type: 'Korean', location: 'Seattle'},
+    // additional Mexican restaurants to test
+    {name: 'Victoricos', type: 'Mexican', location: 'Seattle'},
+
+    {name: 'Thai Sunflowers', type: 'Thai', location: 'Gresham'},
+    {name: 'Hydhub', type: 'Indian', location: 'Gresham'},
+    {name: 'Fuego ALL DAY', type: 'Mexican', location: 'Gresham'},
+    {name: 'Chinese Lucky Dragon', type: 'Chinese', location: 'Gresham'},
+    {name: 'Wasabi Sushi PDX', type: 'Sushi', location: 'Gresham'},
+    {name: 'Sakura Noodles', type: 'Japanese', location: 'Gresham'},
+    {name: 'K-bop!', type: 'Korean', location: 'Gresham'},
+    // additional Mexican restaurants to test
+    {name: 'Victoricos', type: 'Mexican', location: 'Gresham'},
+    {name: 'La Casita', type: 'Mexican', location: 'Gresham'}
+];
+
+function matchFoodCart(foodType, location) {
     return foodCarts.filter(cart => 
         cart.type.toLowerCase() === foodType.toLowerCase() && 
         cart.location.toLowerCase() === location.toLowerCase()
@@ -70,18 +92,9 @@ function findFoodCart(agent) {
     
     let matchingCarts = matchFoodCart(foodType, location);
     let response = '';
-    if (matchingCarts && matchingCarts.length > 0) {
-        if (matchingCarts.length === 1) {
-            response += `Great news! I found a cart that serves ${foodType} in ${location}. It's called ${matchingCarts[0].name}.`;
-        } else if (matchingCarts.length === 2) {
-            response += `I found 2 carts that serve ${foodType} in ${location}. They are ${matchingCarts[0].name} and ${matchingCarts[1].name}.`;
-        } else {
-            response = `I found several carts that serve ${foodType} in ${location}: `;
-            for (let cart of matchingCarts) {
-                response += `${cart.name}, `;
-            }
-            response = response.slice(0, -2);
-        }
+    if (matchingCarts.length > 0) {
+        response = `I found ${matchingCarts.length} cart(s) that serve ${foodType} in ${location}: `;
+        response += matchingCarts.map(cart => cart.name).join(', ');
     } else {
         response = `Sorry, I couldn't find any carts that serve ${foodType} in ${location}.`;
     }
@@ -99,16 +112,7 @@ function findFoodCartInfo(agent) {
     agent.add(foodCartInfo);
 }
 
-const foodCarts = [
-    {name: 'Thai Sunflowers', type: 'Thai'},
-    {name: 'Wolf Head Burgerhouse', type: 'American'},
-    {name: 'Hydhub', type: 'Indian'},
-    {name: 'Sakura Noodles', type: 'Japanese'},
-    {name: 'Chinese Lucky Dragon', type: 'Chinese'},
-    {name: 'K-bop!', type: 'Korean'},
-    {name: 'Wasabi Sushi PDX', type: 'Sushi'},
-    {name: 'Fuego ALL DAY', type: 'Mexican'}
-];
+
 
 function retrieveFoodCartInfo(foodCartName) {
     const foodCart = foodCarts.find(cart => cart.name.toLowerCase() === foodCartName.toLowerCase());
