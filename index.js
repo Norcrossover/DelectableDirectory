@@ -6,14 +6,14 @@ const functions = require('firebase-functions');
 const {WebhookClient} = require('dialogflow-fulfillment');
 const {Card, Suggestion} = require('dialogflow-fulfillment');
  
-process.env.DEBUG = 'dialogflow:debug'; // enables lib debugging statements
+// process.env.DEBUG = 'dialogflow:debug'; // enables lib debugging statements
 
-const express = require('express');
-const app = express();
-const port = process.env.PORT || 3000;
-app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
-  });  
+// const express = require('express');
+// const app = express();
+// const port = process.env.PORT || 3000;
+// app.listen(port, () => {
+//     console.log(`Server is running on port ${port}`);
+//   });  
 
 exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, response) => {
   const agent = new WebhookClient({ request, response });
@@ -65,39 +65,55 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
 }
 
 function findFoodCart(agent) {
+    const contextForFindFoodCart = "findfoodcart-followup";
     // Get the response values
-    let foodType = agent.context.get('foodcontext').parameters.TypeOfFood;
-    let location = agent.context.get('foodcontext').parameters.Location;
+    // let foodType = agent.context.get(contextForFindFoodCart).parameters.TypeOfFood;
+    // let location = agent.context.get(contextForFindFoodCart).parameters.Location;
+    let foodType = agent.contexts[0].parameters.TypeOfFood;
+    let location = agent.contexts[0].parameters.Location;
+
+
+    console.log(`foodType = ${foodType}`);
+    console.log(`location = ${location}`);
+
+    agent.add(`foodType = ${foodType}`);
+    agent.add(`location = ${location}`);
 
     // Reprompt for missing information
     if (foodType == null || foodType == "") {
+        console.log('Missing foodType');
         agent.add('Could you please specify the type of food you are looking for?');
         return;
     }
 
     if (location == null || location == "") {
+        console.log('Missing location');
         agent.add('Could you please specify the location?');
         return;
     }
 
     // Match the food type and location to a cart
     let matchingCarts = matchFoodCart(foodType, location);
+    console.log(`matchingCarts = ${JSON.stringify(matchingCarts)}`);
 
     // Check if any matching carts were found
-    if (!matchingCarts || matchingCarts.length === 0) {
+    if (matchingCarts == null || matchingCarts.length === 0) {
+        console.log('No matching carts found');
         agent.add(`Sorry, I couldn't find any carts that serve ${foodType} in ${location}.`);
-    } else if (matchingCarts.length === 1) {
-        agent.add(`Great news! I found a cart that serves ${foodType} in ${location}. It's called ${matchingCarts[0].name}.`);
-    } else if (matchingCarts.length === 2) {
-        agent.add(`I found 2 carts that serve ${foodType} in ${location}. They are ${matchingCarts[0].name} and ${matchingCarts[1].name}.`);
     } else {
-        let response = `I found several carts that serve ${foodType} in ${location}: `;
-        for (let cart of matchingCarts) {
-            response += `${cart.name}, `;
+        if (matchingCarts.length === 1) {
+        agent.add(`Great news! I found a cart that serves ${foodType} in ${location}. It's called ${matchingCarts[0].name}.`);
+        } else if (matchingCarts.length === 2) {
+            agent.add(`I found 2 carts that serve ${foodType} in ${location}. They are ${matchingCarts[0].name} and ${matchingCarts[1].name}.`);
+        } else {
+            let response = `I found several carts that serve ${foodType} in ${location}: `;
+            for (let cart of matchingCarts) {
+                response += `${cart.name}, `;
+            }
+            // Remove the trailing comma and space
+            response = response.slice(0, -2);
+            agent.add(response);
         }
-        // Remove the trailing comma and space
-        response = response.slice(0, -2);
-        agent.add(response);
     }
 
     agent.add(`Have successfully made it to the end`);
