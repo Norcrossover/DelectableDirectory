@@ -64,11 +64,9 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
 }
 
 function findFoodCart(agent) {
-    let foodType = agent.parameters.TypeOfFood;
-    let location = agent.parameters.Location;
+    const { TypeOfFood: foodType, Location: location } = agent.parameters;
 
-    // Reprompt for missing information
-    if (foodType == null || foodType == "" || location == null || location == "") return;
+    if (!foodType || !location) return;
     
     let matchingCarts = matchFoodCart(foodType, location);
     let response = '';
