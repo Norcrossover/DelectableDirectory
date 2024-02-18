@@ -84,26 +84,28 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
 
     function findFoodCartIntent(agent) {
         const { TypeOfFood: foodType, Location: location } = agent.parameters;
-
+        const originalFoodType = agent.getContext('findfoodcart-followup').parameters['TypeOfFood.original'];
+    
         if (!foodType || !location) return;
         
-        let matchingCarts = matchFoodCart(foodType, location);
+        let matchingCarts = matchFoodCart(foodType.toLowerCase(), location.toLowerCase());
         let response = '';
         if (matchingCarts.length > 0) {
-            response = `I found ${matchingCarts.length} cart(s) that serve ${foodType} in ${location}: `;
+            response = `I found ${matchingCarts.length} cart(s) that serve ${originalFoodType} in ${location}: `;
             response += matchingCarts.map(cart => cart.name).join(', ');
-            response += ' Would you like more information on any food cart that matches your criteria?';
-
+            response += '. Would you like more information on any food cart that matches your criteria?';
+    
             agent.setContext({
                 name: matchingCartsContextName,
                 lifespan: 5,
                 parameters: {matchingCarts: matchingCarts}
             });
         } else {
-            response = `Sorry, I couldn't find any carts that serve ${foodType} in ${location}.`;
+            response = `Sorry, I couldn't find any carts that serve ${originalFoodType} in ${location}.`;
         }
         agent.add(response);
     }
+    
 
 
 
