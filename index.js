@@ -17,8 +17,8 @@ const {Card, Suggestion} = require('dialogflow-fulfillment');
 
 exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, response) => {
   const agent = new WebhookClient({ request, response });
-  console.log('Dialogflow Request headers: ' + JSON.stringify(request.headers));
-  console.log('Dialogflow Request body: ' + JSON.stringify(request.body));
+//   console.log('Dialogflow Request headers: ' + JSON.stringify(request.headers));
+//   console.log('Dialogflow Request body: ' + JSON.stringify(request.body));
  
   function welcome(agent) {
     agent.add(`Welcome to my agent!`);
@@ -67,17 +67,7 @@ function findFoodCart(agent) {
     let location = agent.parameters.Location;
 
     // Reprompt for missing information
-    if (foodType == null || foodType == "") {
-        console.log('Missing foodType');
-        agent.add('Could you please specify the type of food you are looking for?');
-        return;
-    }
-
-    if (location == null || location == "") {
-        console.log('Missing location');
-        agent.add('Could you please specify the location?');
-        return;
-    }
+    if (foodType == null || foodType == "" || location == null || location == "") return;
     
     let matchingCarts = matchFoodCart(foodType, location);
     let response = '';
@@ -91,13 +81,12 @@ function findFoodCart(agent) {
             for (let cart of matchingCarts) {
                 response += `${cart.name}, `;
             }
-            // Remove the trailing comma and space
             response = response.slice(0, -2);
-            agent.add(response);
         }
     } else {
-        agent.add(`Sorry, I couldn't find any carts that serve ${foodType} in ${location}.`);
+        response = `Sorry, I couldn't find any carts that serve ${foodType} in ${location}.`;
     }
+    agent.add(response);
 }
   
 function findFoodCartInfo(agent) {
