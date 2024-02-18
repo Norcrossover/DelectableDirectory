@@ -16,143 +16,128 @@ const {Card, Suggestion} = require('dialogflow-fulfillment');
 //   });  
 
 exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, response) => {
-  const agent = new WebhookClient({ request, response });
-//   console.log('Dialogflow Request headers: ' + JSON.stringify(request.headers));
-//   console.log('Dialogflow Request body: ' + JSON.stringify(request.body));
- 
-  function welcome(agent) {
+    const agent = new WebhookClient({ request, response });
+    //   console.log('Dialogflow Request headers: ' + JSON.stringify(request.headers));
+    //   console.log('Dialogflow Request body: ' + JSON.stringify(request.body));
+
+    function welcome(agent) {
     agent.add(`Welcome to my agent!`);
-  }
- 
-  function fallback(agent) {
+    }
+
+    function fallback(agent) {
     agent.add(`I didn't understand`);
     agent.add(`I'm sorry, can you try again?`);
-  }
-
-  // // Uncomment and edit to make your own intent handler
-  // // uncomment `intentMap.set('your intent name here', yourFunctionHandler);`
-  // // below to get this function to be run when a Dialogflow intent is matched
-  // function yourFunctionHandler(agent) {
-  //   agent.add(`This message is from Dialogflow's Cloud Functions for Firebase editor!`);
-  //   agent.add(new Card({
-  //       title: `Title: this is a card title`,
-  //       imageUrl: 'https://developers.google.com/actions/images/badges/XPM_BADGING_GoogleAssistant_VER.png',
-  //       text: `This is the body text of a card.  You can even use line\n  breaks and emoji! 💁`,
-  //       buttonText: 'This is a button',
-  //       buttonUrl: 'https://assistant.google.com/'
-  //     })
-  //   );
-  //   agent.add(new Suggestion(`Quick Reply`));
-  //   agent.add(new Suggestion(`Suggestion`));
-  //   agent.setContext({ name: 'weather', lifespan: 2, parameters: { city: 'Rome' }});
-  // }
-  
-const foodCarts = [
-    {name: 'Thai Sunflowers', type: 'Thai', location: 'Portland'},
-    {name: 'Hydhub', type: 'Indian', location: 'Portland'},
-    {name: 'Fuego ALL DAY', type: 'Mexican', location: 'Portland'},
-    {name: 'Chinese Lucky Dragon', type: 'Chinese', location: 'Portland'},
-    {name: 'Wasabi Sushi PDX', type: 'Sushi', location: 'Portland'},
-    {name: 'Sakura Noodles', type: 'Japanese', location: 'Portland'},
-    {name: 'K-bop!', type: 'Korean', location: 'Portland'},
-
-    {name: 'Thai Sunflowers', type: 'Thai', location: 'Seattle'},
-    {name: 'Hydhub', type: 'Indian', location: 'Seattle'},
-    {name: 'Fuego ALL DAY', type: 'Mexican', location: 'Seattle'},
-    {name: 'Chinese Lucky Dragon', type: 'Chinese', location: 'Seattle'},
-    {name: 'Wasabi Sushi PDX', type: 'Sushi', location: 'Seattle'},
-    {name: 'Sakura Noodles', type: 'Japanese', location: 'Seattle'},
-    {name: 'K-bop!', type: 'Korean', location: 'Seattle'},
-    // additional Mexican restaurants to test
-    {name: 'Victoricos', type: 'Mexican', location: 'Seattle'},
-
-    {name: 'Thai Sunflowers', type: 'Thai', location: 'Gresham'},
-    {name: 'Hydhub', type: 'Indian', location: 'Gresham'},
-    {name: 'Fuego ALL DAY', type: 'Mexican', location: 'Gresham'},
-    {name: 'Chinese Lucky Dragon', type: 'Chinese', location: 'Gresham'},
-    {name: 'Wasabi Sushi PDX', type: 'Sushi', location: 'Gresham'},
-    {name: 'Sakura Noodles', type: 'Japanese', location: 'Gresham'},
-    {name: 'K-bop!', type: 'Korean', location: 'Gresham'},
-    // additional Mexican restaurants to test
-    {name: 'Victoricos', type: 'Mexican', location: 'Gresham'},
-    {name: 'La Casita', type: 'Mexican', location: 'Gresham'}
-];
-
-function matchFoodCart(foodType, location) {
-    return foodCarts.filter(cart => 
-        cart.type.toLowerCase() === foodType.toLowerCase() && 
-        cart.location.toLowerCase() === location.toLowerCase()
-    );
-}
-
-function findFoodCart(agent) {
-    const { TypeOfFood: foodType, Location: location } = agent.parameters;
-
-    if (!foodType || !location) return;
-    
-    let matchingCarts = matchFoodCart(foodType, location);
-    let response = '';
-    if (matchingCarts.length > 0) {
-        response = `I found ${matchingCarts.length} cart(s) that serve ${foodType} in ${location}: `;
-        response += matchingCarts.map(cart => cart.name).join(', ');
-    } else {
-        response = `Sorry, I couldn't find any carts that serve ${foodType} in ${location}.`;
     }
-    agent.add(response);
-}
-  
-function findFoodCartInfo(agent) {
-    // Get the response values
-    let foodCartName = agent.parameters.foodCartName;
-
-    // Retrieve the information about the food cart
-    let foodCartInfo = retrieveFoodCartInfo(foodCartName);
-
-    // Add the retrieved information to the agent's response
-    agent.add(foodCartInfo);
-}
 
 
 
-function retrieveFoodCartInfo(foodCartName) {
-    const foodCart = foodCarts.find(cart => cart.name.toLowerCase() === foodCartName.toLowerCase());
+    // ----------- Find Food Cart Intent ---------------
+    const thaiSunflowersInfo = 'Serves some fresh Thai cuisine that enhances the umami flavors with hints of sweet and spicy. Try our famous Pineapple fried rice!';
+    const hydhubInfo = 'Offers a variety of Indian dishes with rich spices and flavors. Don\'t miss our Butter Chicken!';
+    const fuegoInfo = 'Home of authentic Mexican street food. Our Tacos Al Pastor are a must-try!';
+    const chineseLuckyDragonInfo = 'Specializes in traditional Chinese cuisine. Our Kung Pao Chicken is a crowd favorite!';
+    const wasabiSushiInfo = 'Offers a wide range of sushi and other Japanese dishes. Be sure to try our Salmon Nigiri!';
+    const sakuraNoodlesInfo = 'Known for our delicious ramen with rich, flavorful broth. Don\'t forget to try our Gyoza!';
+    const kBopInfo = 'Serves Korean classics like Bibimbap and Kimchi Fried Rice. Our Bulgogi is a must-try!';
+    const victoricosInfo = 'Victoricos offers a taste of Mexico in Gresham. Our Carne Asada and Chiles Rellenos are local favorites.';
+    const laCasitaInfo = 'La Casita is known for its authentic Mexican cuisine. Don\'t miss our Enchiladas and Tamales.';
 
-    if (foodCart) {
-        return generateFoodCartInfoString(foodCart.type, foodCart.name);
-    } else {
-        return `Sorry, I couldn't find any information about the ${foodCartName} food cart.`;
+    const foodCarts = [
+        {name: 'Thai Sunflowers', type: 'Thai', location: 'Portland', info: thaiSunflowersInfo},
+        {name: 'Hydhub', type: 'Indian', location: 'Portland', info: hydhubInfo},
+        {name: 'Fuego ALL DAY', type: 'Mexican', location: 'Portland', info: fuegoInfo},
+        {name: 'Chinese Lucky Dragon', type: 'Chinese', location: 'Portland', info: chineseLuckyDragonInfo},
+        {name: 'Wasabi Sushi PDX', type: 'Sushi', location: 'Portland', info: wasabiSushiInfo},
+        {name: 'Sakura Noodles', type: 'Japanese', location: 'Portland', info: sakuraNoodlesInfo},
+        {name: 'K-bop!', type: 'Korean', location: 'Portland', info: kBopInfo},
+
+        {name: 'Thai Sunflowers', type: 'Thai', location: 'Seattle', info: thaiSunflowersInfo},
+        {name: 'Hydhub', type: 'Indian', location: 'Seattle', info: hydhubInfo},
+        {name: 'Fuego ALL DAY', type: 'Mexican', location: 'Seattle', info: fuegoInfo},
+        {name: 'Chinese Lucky Dragon', type: 'Chinese', location: 'Seattle', info: chineseLuckyDragonInfo},
+        {name: 'Wasabi Sushi PDX', type: 'Sushi', location: 'Seattle', info: wasabiSushiInfo},
+        {name: 'Sakura Noodles', type: 'Japanese', location: 'Seattle', info: sakuraNoodlesInfo},
+        {name: 'K-bop!', type: 'Korean', location: 'Seattle', info: kBopInfo},
+        // additional Mexican restaurants to test
+        {name: 'Victoricos', type: 'Mexican', location: 'Seattle', info: victoricosInfo},
+
+        {name: 'Thai Sunflowers', type: 'Thai', location: 'Gresham', info: thaiSunflowersInfo},
+        {name: 'Hydhub', type: 'Indian', location: 'Gresham', info: hydhubInfo},
+        {name: 'Fuego ALL DAY', type: 'Mexican', location: 'Gresham', info: fuegoInfo},
+        {name: 'Chinese Lucky Dragon', type: 'Chinese', location: 'Gresham', info: chineseLuckyDragonInfo},
+        {name: 'Wasabi Sushi PDX', type: 'Sushi', location: 'Gresham', info: wasabiSushiInfo},
+        {name: 'Sakura Noodles', type: 'Japanese', location: 'Gresham', info: sakuraNoodlesInfo},
+        {name: 'K-bop!', type: 'Korean', location: 'Gresham', info: kBopInfo},
+        // additional Mexican restaurants to test
+        {name: 'Victoricos', type: 'Mexican', location: 'Gresham', info: victoricosInfo},
+        {name: 'La Casita', type: 'Mexican', location: 'Gresham', info: laCasitaInfo}
+    ];
+
+    const matchingCartsContextName = 'matchingCarts';
+
+    function matchFoodCart(foodType, location) {
+        return foodCarts.filter(cart => 
+            cart.type.toLowerCase() === foodType.toLowerCase() && 
+            cart.location.toLowerCase() === location.toLowerCase()
+        );
     }
-}
+
+    function findFoodCart(agent) {
+        const { TypeOfFood: foodType, Location: location } = agent.parameters;
+
+        if (!foodType || !location) return;
+        
+        let matchingCarts = matchFoodCart(foodType, location);
+        let response = '';
+        if (matchingCarts.length > 0) {
+            response = `I found ${matchingCarts.length} cart(s) that serve ${foodType} in ${location}: `;
+            response += matchingCarts.map(cart => cart.name).join(', ');
+            response += ' Would you like more information on any food cart that matches your criteria?';
+
+            agent.setContext({
+                name: matchingCartsContextName,
+                lifespan: 5,
+                parameters: {matchingCarts: matchingCarts}
+            });
+        } else {
+            response = `Sorry, I couldn't find any carts that serve ${foodType} in ${location}.`;
+        }
+        agent.add(response);
+    }
 
 
-function generateFoodCartInfoString(typeOfFood, foodCartName) {
-    const timeOpen = `The cart is open from 9am to 5pm. `;
-    const cartServesTypeOfFood = `The cart serves ${typeOfFood} food. `;
-    const nameOfFoodCart = `The name of this food cart is ${foodCartName}. `;
 
-    return nameOfFoodCart + cartServesTypeOfFood + timeOpen;
-}
+    // ----------- Get Food Cart Information  ---------------
+    function getFoodCartInformation(agent) {
+        const matchingCarts = agent.context.get(matchingCartsContextName).parameters.matchingCarts;
+        let foodCartName = agent.parameters.foodCartName;
+        let foodCartInfo = retrieveFoodCartInfo(foodCartName, matchingCarts);
+        agent.add(foodCartInfo);
+    }
+
+    function retrieveFoodCartInfo(foodCartName, matchingCarts) {
+        const foodCart = matchingCarts.find(cart => cart.name.toLowerCase() === foodCartName.toLowerCase());
+
+        if (foodCart) {
+            return generateFoodCartInfoString(foodCart.type, foodCart.name, foodCart.info);
+        } else {
+            return `Sorry, I couldn't find any information about the ${foodCartName} food cart in the matching list.`;
+        }
+    }
+
+    function generateFoodCartInfoString(typeOfFood, foodCartName, info) {
+        const timeOpen = `The cart is open from 9am to 5pm. `;
+        const cartServesTypeOfFood = `The cart serves ${typeOfFood} food. `;
+        const nameOfFoodCart = `The name of this food cart is ${foodCartName}. `;
+        return nameOfFoodCart + cartServesTypeOfFood + timeOpen + info;
+    }
 
 
 
-  // // Uncomment and edit to make your own Google Assistant intent handler
-  // // uncomment `intentMap.set('your intent name here', googleAssistantHandler);`
-  // // below to get this function to be run when a Dialogflow intent is matched
-  // function googleAssistantHandler(agent) {
-  //   let conv = agent.conv(); // Get Actions on Google library conv instance
-  //   conv.ask('Hello from the Actions on Google client library!') // Use Actions on Google library
-  //   agent.add(conv); // Add Actions on Google library responses to your agent's response
-  // }
-  // // See https://github.com/dialogflow/fulfillment-actions-library-nodejs
-  // // for a complete Dialogflow fulfillment library Actions on Google client library v2 integration sample
-
-  // Run the proper function handler based on the matched Dialogflow intent name
-  let intentMap = new Map();
-  intentMap.set('Default Welcome Intent', welcome);
-  intentMap.set('Default Fallback Intent', fallback);
-  // intentMap.set('your intent name here', yourFunctionHandler);
-  intentMap.set('Find Food Cart', findFoodCart);
-  intentMap.set('Find Food Cart Info', findFoodCartInfo);
-  // intentMap.set('your intent name here', googleAssistantHandler);
-  agent.handleRequest(intentMap);
+    let intentMap = new Map();
+    intentMap.set('Default Welcome Intent', welcome);
+    intentMap.set('Default Fallback Intent', fallback);
+    intentMap.set('Find Food Cart', findFoodCart);
+    intentMap.set('Get Food Cart Information', getFoodCartInformation);
+    agent.handleRequest(intentMap);
 });
