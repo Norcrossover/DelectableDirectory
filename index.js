@@ -17,8 +17,8 @@ const {Card, Suggestion} = require('dialogflow-fulfillment');
 
 exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, response) => {
     const agent = new WebhookClient({ request, response });
-    //   console.log('Dialogflow Request headers: ' + JSON.stringify(request.headers));
-    //   console.log('Dialogflow Request body: ' + JSON.stringify(request.body));
+      console.log('Dialogflow Request headers: ' + JSON.stringify(request.headers));
+      console.log('Dialogflow Request body: ' + JSON.stringify(request.body));
 
     function welcome(agent) {
     agent.add(`Welcome to my agent!`);
@@ -73,7 +73,7 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
         {name: 'La Casita', type: 'Mexican', location: 'Gresham', info: laCasitaInfo}
     ];
 
-    const matchingCartsContextName = 'matchingCarts';
+    const matchingCartsContextName = 'matchingcarts';
 
     function matchFoodCart(foodType, location) {
         return foodCarts.filter(cart => 
@@ -82,7 +82,7 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
         );
     }
 
-    function findFoodCart(agent) {
+    function findFoodCartIntent(agent) {
         const { TypeOfFood: foodType, Location: location } = agent.parameters;
 
         if (!foodType || !location) return;
@@ -108,9 +108,14 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
 
 
     // ----------- Get Food Cart Information  ---------------
-    function getFoodCartInformation(agent) {
-        const matchingCarts = agent.context.get(matchingCartsContextName).parameters.matchingCarts;
-        let foodCartName = agent.parameters.foodCartName;
+    function getFoodCartInformationIntent(agent) {
+        const matchingCartsContext = agent.contexts.find(context => context.name.endsWith(matchingCartsContextName));
+        if (!matchingCartsContext) {
+            console.log(`No context found with name ${matchingCartsContextName}`);
+            return;
+        }
+        const matchingCarts = matchingCartsContext.parameters.matchingCarts;
+        let foodCartName = agent.parameters.FoodCartName;
         let foodCartInfo = retrieveFoodCartInfo(foodCartName, matchingCarts);
         agent.add(foodCartInfo);
     }
@@ -137,7 +142,7 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
     let intentMap = new Map();
     intentMap.set('Default Welcome Intent', welcome);
     intentMap.set('Default Fallback Intent', fallback);
-    intentMap.set('Find Food Cart', findFoodCart);
-    intentMap.set('Get Food Cart Information', getFoodCartInformation);
+    intentMap.set('Find Food Cart', findFoodCartIntent);
+    intentMap.set('Get Food Cart Information', getFoodCartInformationIntent);
     agent.handleRequest(intentMap);
 });
