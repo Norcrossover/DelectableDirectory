@@ -48,7 +48,6 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
   // }
   
   function matchFoodCart(foodType, location) {
-    // Define your food cart data
     const foodCarts = [
         {name: 'Pizza Schmizza', type: 'Pizza', location: 'Portland'},
         {name: 'Thai Sunflowers', type: 'Thai', location: 'Portland'},
@@ -58,26 +57,14 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
         {name: 'Wasabi Sushi PDX', type: 'Sushi', location: 'Portland'}
     ];
 
-    // Filter the food carts based on the food type and location
     const matchingCarts = foodCarts.filter(cart => cart.type.toLowerCase() === foodType.toLowerCase() && cart.location.toLowerCase() === location.toLowerCase());
 
     return matchingCarts;
 }
 
 function findFoodCart(agent) {
-    const contextForFindFoodCart = "findfoodcart-followup";
-    // Get the response values
-    // let foodType = agent.context.get(contextForFindFoodCart).parameters.TypeOfFood;
-    // let location = agent.context.get(contextForFindFoodCart).parameters.Location;
-    let foodType = agent.contexts[0].parameters.TypeOfFood;
-    let location = agent.contexts[0].parameters.Location;
-
-
-    console.log(`foodType = ${foodType}`);
-    console.log(`location = ${location}`);
-
-    agent.add(`foodType = ${foodType}`);
-    agent.add(`location = ${location}`);
+    let foodType = agent.parameters.TypeOfFood;
+    let location = agent.parameters.Location;
 
     // Reprompt for missing information
     if (foodType == null || foodType == "") {
@@ -91,22 +78,16 @@ function findFoodCart(agent) {
         agent.add('Could you please specify the location?');
         return;
     }
-
-    // Match the food type and location to a cart
+    
     let matchingCarts = matchFoodCart(foodType, location);
-    console.log(`matchingCarts = ${JSON.stringify(matchingCarts)}`);
-
-    // Check if any matching carts were found
-    if (matchingCarts == null || matchingCarts.length === 0) {
-        console.log('No matching carts found');
-        agent.add(`Sorry, I couldn't find any carts that serve ${foodType} in ${location}.`);
-    } else {
+    let response = '';
+    if (matchingCarts && matchingCarts.length > 0) {
         if (matchingCarts.length === 1) {
-        agent.add(`Great news! I found a cart that serves ${foodType} in ${location}. It's called ${matchingCarts[0].name}.`);
+            response += `Great news! I found a cart that serves ${foodType} in ${location}. It's called ${matchingCarts[0].name}.`;
         } else if (matchingCarts.length === 2) {
-            agent.add(`I found 2 carts that serve ${foodType} in ${location}. They are ${matchingCarts[0].name} and ${matchingCarts[1].name}.`);
+            response += `I found 2 carts that serve ${foodType} in ${location}. They are ${matchingCarts[0].name} and ${matchingCarts[1].name}.`;
         } else {
-            let response = `I found several carts that serve ${foodType} in ${location}: `;
+            response = `I found several carts that serve ${foodType} in ${location}: `;
             for (let cart of matchingCarts) {
                 response += `${cart.name}, `;
             }
@@ -114,9 +95,9 @@ function findFoodCart(agent) {
             response = response.slice(0, -2);
             agent.add(response);
         }
+    } else {
+        agent.add(`Sorry, I couldn't find any carts that serve ${foodType} in ${location}.`);
     }
-
-    agent.add(`Have successfully made it to the end`);
 }
   
 function findFoodCartInfo(agent) {
